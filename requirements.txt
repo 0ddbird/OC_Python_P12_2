@@ -1,0 +1,8 @@
+pydantic
+sentry_sdk
+sqlalchemy
+typer
+passlib
+pyjwt
+python_dotenv
+psutil
