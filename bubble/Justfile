@@ -1,0 +1,4 @@
+# Just documentation: https://just.systems/man/en/
+
+@release:
+	cargo build --release && cp target/release/bubble ~/bin/bubble
