@@ -1,7 +1,6 @@
 import typer
-from permissions.decorators import permissions_required
 
-
+from src.permissions.decorators import permissions_required
 from src.db_access import get_db_session
 from src.users.models import User, UserType
 

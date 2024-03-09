@@ -6,8 +6,8 @@ from sqlalchemy.orm import joinedload
 from src.auth.storage import TokenStorage
 from src.auth.utils import decode_jwt, generate_jwt
 from src.db_access import get_db_session
-from src.users.models import User
 from src.users.app import app as users_app
+from src.users.models import User
 
 storage = TokenStorage()
 app = typer.Typer()

@@ -1,10 +1,9 @@
+use dotenv::dotenv;
 use std::env;
 use std::fs;
 use std::sync::{Arc, Mutex};
-use tokio::net::UnixListener;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
-use dotenv::dotenv;
-
+use tokio::net::UnixListener;
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {

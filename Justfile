@@ -1,7 +1,7 @@
 # Just documentation: https://just.systems/man/en/
 
 src:= "src"
-MANDALA_PATH:= "mandala"
+RS_APP:= "bubble"
 
 
 default:
@@ -25,15 +25,10 @@ default:
 @app *additional_args:
 	python -m {{src}} {{additional_args}}
 
-# ================== MANDALA COMMANDS ====================
+# ================== BUBBLE COMMANDS ====================
 
-# Run mandala
-@mandala:
-	python -m {{src}} runmandala
-
-# Build mandala binary and move it into the epic_events directory
-@mandala-build:
-	cd {{MANDALA_PATH}} && cargo build --release && cp target/release/mandala ../epic_events/mandala
+@release:
+	cd {{RS_APP}} && cargo build --release && cp target/release/{{RS_APP}} ~/bin/{{RS_APP}}
 
 
 # ================ FORMATTING COMMANDS ==================
@@ -42,3 +37,4 @@ default:
 	isort {{src}}
 	ruff format {{src}}
 	python3 -m black {{src}}
+	cd {{RS_APP}} && cargo fmt
