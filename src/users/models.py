@@ -1,10 +1,10 @@
 from enum import Enum
 
 from passlib.hash import bcrypt
-from sqlalchemy import Column, ForeignKey, Integer, String
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy.sql import func
 
-Base = declarative_base()
+from src.db_access import Base
 
 
 class UserType(Enum):
@@ -20,11 +20,13 @@ class User(Base):
     username = Column(String, unique=True)
     password = Column(String)
     email = Column(String, unique=True)
-    type = Column(String)
+    user_type = Column(String)
+    time_created = Column(DateTime(timezone=True), server_default=func.now())
+    time_updated = Column(DateTime(timezone=True), onupdate=func.now())
 
     __mapper_args__ = {
         "polymorphic_identity": "user",
-        "polymorphic_on": type,
+        "polymorphic_on": user_type,
     }
 
     def __init__(self, password, **kwargs):

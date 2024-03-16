@@ -6,3 +6,4 @@ passlib
 pyjwt
 python_dotenv
 psutil
+rich

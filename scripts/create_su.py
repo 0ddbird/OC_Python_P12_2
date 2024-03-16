@@ -13,9 +13,7 @@ Session = sessionmaker(bind=engine)
 session = Session()
 
 super_user = Admin(
-    username="admin",
-    password="admin",
-    email="admin@test.com",
+    username="admin", password="admin", email="admin@ee.com", user_type="admin"
 )
 
 session.add(super_user)

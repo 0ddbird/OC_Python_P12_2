@@ -26,19 +26,25 @@ async fn main() -> std::io::Result<()> {
 
         tokio::spawn(async move {
             let mut buf = vec![0; 1024];
-            socket.read(&mut buf).await.unwrap();
-            let message = String::from_utf8(buf).unwrap();
-            let message = message.trim_matches(char::from(0));
-            if message == "get_token" {
-                let response = match &*token_clone.lock().unwrap() {
-                    Some(token) => token.clone(),
-                    None => "No token stored".to_string(),
-                };
-                socket.write_all(response.as_bytes()).await.unwrap();
-            } else {
-                *token_clone.lock().unwrap() = Some(message.to_string());
-                let response = "Token stored";
-                socket.write_all(response.as_bytes()).await.unwrap();
+            match socket.read(&mut buf).await {
+                Ok(_) => {
+                    let message = String::from_utf8(buf).unwrap();
+                    let message = message.trim_matches(char::from(0));
+                    if message == "get_token" {
+                        let response = match &*token_clone.lock().unwrap() {
+                            Some(token) => token.clone(),
+                            None => "No token stored".to_string(),
+                        };
+                        socket.write_all(response.as_bytes()).await.unwrap();
+                    } else {
+                        *token_clone.lock().unwrap() = Some(message.to_string());
+                        let response = "Token stored";
+                        socket.write_all(response.as_bytes()).await.unwrap();
+                    }
+                }
+                Err(e) => {
+                    println!("Error reading from socket: {}", e);
+                }
             }
         });
     }

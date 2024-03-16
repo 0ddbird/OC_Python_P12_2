@@ -1,17 +1,26 @@
 import socket
 
 import typer
+from rich import print
 from sqlalchemy.orm import joinedload
 
 from src.auth.storage import TokenStorage
 from src.auth.utils import decode_jwt, generate_jwt
+from src.companies.app import app as companies_app
+from src.contracts.app import app as contracts_app
+from src.customers.app import app as customers_app
 from src.db_access import get_db_session
+from src.events.app import app as events_app
 from src.users.app import app as users_app
 from src.users.models import User
 
 storage = TokenStorage()
 app = typer.Typer()
 app.add_typer(users_app, name="users")
+app.add_typer(companies_app, name="companies")
+app.add_typer(customers_app, name="customers")
+app.add_typer(contracts_app, name="contracts")
+app.add_typer(events_app, name="events")
 
 
 @app.command()
