@@ -3,7 +3,7 @@ import os
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
-from src.users.models import Admin
+from epic_events.models.users import Admin
 
 load_dotenv()
 

@@ -2,9 +2,10 @@ from enum import Enum
 
 from passlib.hash import bcrypt
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
-from src.db_access import Base
+from epic_events.models import Base
 
 
 class UserType(Enum):
@@ -62,6 +63,8 @@ class SalesRep(User):
     __mapper_args__ = {
         "polymorphic_identity": UserType.SALES_REP.value,
     }
+    customers = relationship("Customer", back_populates="sales_rep")
+    contracts = relationship("Contract", back_populates="sales_rep")
 
 
 class SupportRep(User):
@@ -70,3 +73,4 @@ class SupportRep(User):
     __mapper_args__ = {
         "polymorphic_identity": UserType.SUPPORT_REP.value,
     }
+    events = relationship("Event", back_populates="support_rep")

@@ -4,15 +4,15 @@ import typer
 from rich import print
 from sqlalchemy.orm import joinedload
 
-from src.auth.storage import TokenStorage
-from src.auth.utils import decode_jwt, generate_jwt
-from src.companies.app import app as companies_app
-from src.contracts.app import app as contracts_app
-from src.customers.app import app as customers_app
-from src.db_access import get_db_session
-from src.events.app import app as events_app
-from src.users.app import app as users_app
-from src.users.models import User
+from epic_events.apps.companies import app as companies_app
+from epic_events.apps.contracts import app as contracts_app
+from epic_events.apps.customers import app as customers_app
+from epic_events.apps.events import app as events_app
+from epic_events.apps.users import app as users_app
+from epic_events.auth.storage import TokenStorage
+from epic_events.auth.utils import decode_jwt, generate_jwt
+from epic_events.models import session
+from epic_events.models.users import User
 
 storage = TokenStorage()
 app = typer.Typer()
@@ -27,9 +27,11 @@ app.add_typer(events_app, name="events")
 def login():
     username = typer.prompt("Username")
     password = typer.prompt("Password", hide_input=True)
-    conn = get_db_session()
     user = (
-        conn.query(User).options(joinedload("*")).filter_by(username=username).first()
+        session.query(User)
+        .options(joinedload("*"))
+        .filter_by(username=username)
+        .first()
     )
     if user is None or not user.check_password(password):
         typer.echo("Invalid username or password")
@@ -59,8 +61,8 @@ def get_auth_user():
         decoded = decode_jwt(token)
     except socket.error as e:
         typer.echo(f"Socket connection failed: {e}")
-    conn = get_db_session()
-    user = conn.query(User).filter_by(username=decoded["username"]).first()
+
+    user = session.query(User).filter_by(username=decoded["username"]).first()
     if user is None:
         typer.echo("User not found")
     else:

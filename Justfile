@@ -1,6 +1,6 @@
 # Just documentation: https://just.systems/man/en/
 
-src:= "src"
+src:= "epic_events"
 RS_APP:= "bubble"
 
 
@@ -10,6 +10,9 @@ default:
 @pypath:
 	echo "export PYTHONPATH=$PYTHONPATH:$(pwd)"
 	export PYTHONPATH=$PYTHONPATH:$(pwd)
+
+@venv:
+	source .venv/bin/activate
 
 # ================ EPIC EVENTS COMMANDS ==================
 
