@@ -1,6 +1,9 @@
+import os
 import socket
 
+import sentry_sdk
 import typer
+from dotenv import load_dotenv
 from rich import print
 from sqlalchemy.orm import joinedload
 
@@ -13,6 +16,12 @@ from epic_events.auth.storage import TokenStorage
 from epic_events.auth.utils import decode_jwt, generate_jwt
 from epic_events.models import session
 from epic_events.models.users import User
+
+load_dotenv()
+
+DSN = os.getenv("SENTRY_DSN")
+
+sentry_sdk.init(dsn=DSN, traces_sample_rate=1.0, profiles_sample_rate=1.0)
 
 storage = TokenStorage()
 app = typer.Typer()

@@ -2,11 +2,7 @@ import typer
 from rich import print
 from rich.table import Table
 
-from epic_events.auth.utils import (
-    ALL_AUTH_USER_TYPES,
-    allow_users,
-    get_current_user,
-)
+from epic_events.auth.utils import ALL_AUTH_USER_TYPES, allow_users, get_current_user
 from epic_events.models import session
 from epic_events.models.users import (
     Admin,

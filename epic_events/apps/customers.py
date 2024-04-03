@@ -60,7 +60,7 @@ def create_customer():
     )
     session.add(customer)
     session.commit()
-    typer.echo(f"{customer} {customer.id} created.")
+    typer.echo(f"{customer} created.")
 
 
 @app.command("update")
@@ -88,7 +88,7 @@ def update_customer():
     customer.sales_rep = sales_rep
     session.commit()
 
-    typer.echo(f"{customer} {customer.id} updated.")
+    typer.echo(f"{customer} updated.")
 
 
 @app.command("delete")

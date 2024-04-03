@@ -20,3 +20,9 @@ class Customer(Base):
 
     time_created = Column(DateTime(timezone=True), server_default=func.now())
     time_updated = Column(DateTime(timezone=True), onupdate=func.now())
+
+    def __repr__(self):
+        return f"Customer(name={self.name}, company={self.company}, sales_rep_id={self.sales_rep.id})"
+
+    def __str__(self):
+        return f"Customer {self.id}: {self.name}"
