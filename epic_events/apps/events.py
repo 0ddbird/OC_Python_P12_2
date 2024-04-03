@@ -70,3 +70,46 @@ def create_event():
     session.add(event)
     session.commit()
     typer.echo(f"Event {event.id} created")
+
+
+@app.command("update")
+def update_event():
+    event_id = typer.prompt("Event ID")
+    event = session.query(Event).get(event_id)
+
+    if event is None:
+        typer.echo(f"Event {event_id} not found")
+        raise typer.Exit(code=1)
+
+    name = typer.prompt("Name", default=event.name)
+    start_date = typer.prompt("Start date", default=event.start_date)
+    end_date = typer.prompt("End date", default=event.end_date)
+    attendees = typer.prompt("Attendees", default=event.attendees)
+    location = typer.prompt("Location", default=event.location)
+    notes = typer.prompt("Notes", default=event.notes)
+    contract_id = typer.prompt("Contract ID", default=event.contract_id)
+    support_rep_id = typer.prompt("Support Rep ID", default=event.support_rep_id)
+
+    event.name = name
+    event.start_date = start_date
+    event.end_date = end_date
+    event.attendees = attendees
+    event.location = location
+    event.notes = notes
+    event.contract_id = contract_id
+    event.support_rep_id = support_rep_id
+
+    session.commit()
+
+
+@app.command("delete")
+def delete_event(event_id: int):
+    event = session.query(Event).get(event_id)
+
+    if event is None:
+        typer.echo(f"Event {event_id} not found")
+        raise typer.Exit(code=1)
+
+    session.delete(event)
+    session.commit()
+    typer.echo(f"Event {event_id} deleted")

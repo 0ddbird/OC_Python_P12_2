@@ -78,35 +78,37 @@ def update_user():
         raise typer.Exit(code=1)
 
     user_id = typer.prompt("User Id")
-    user_found = session.query(User).get(user_id)
+    user = session.query(User).get(user_id)
 
-    if not user_found:
+    if user is None:
         typer.echo(f"User {user_id} not found.")
         raise typer.Exit(code=1)
 
-    is_different_user = user_found.id != request_user.id
+    is_different_user = user.id != request_user.id
+
     if is_different_user and request_user.user_type != UserType.ADMIN.value:
         typer.echo("You can only update your own profile.")
         raise typer.Exit(code=1)
 
-    username = typer.prompt("Username", default=user_found.username, type=str)
-    password = typer.prompt("Password", default=user_found.password, hide_input=True)
-    email = typer.prompt("Email", default=user_found.email, type=str)
-    user_found.username = username
-    user_found.set_password(password)
-    user_found.email = email
+    username = typer.prompt("Username", default=user.username, type=str)
+    password = typer.prompt("Password", default=user.password, hide_input=True)
+    email = typer.prompt("Email", default=user.email, type=str)
+    user.username = username
+    user.set_password(password)
+    user.email = email
     session.commit()
     typer.echo(f"User {user_id} updated")
 
 
 @app.command("delete")
-def delete_user():
+def delete_user(user_id: int):
     allow_users([UserType.ADMIN])
-    user_id = typer.prompt("User Id")
-    user_found = session.query(User).get(user_id)
-    if not user_found:
+    user = session.query(User).get(user_id)
+
+    if user is None:
         typer.echo(f"User {user_id} not found")
         raise typer.Exit(code=1)
-    session.delete(user_found)
+
+    session.delete(user)
     session.commit()
     typer.echo(f"User {user_id} deleted")

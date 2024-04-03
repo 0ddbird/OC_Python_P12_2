@@ -76,3 +76,53 @@ def create_contract():
     session.add(contract)
     session.commit()
     typer.echo(f"Contract {contract.id} created.")
+
+
+@app.command("update")
+def update_contract():
+    contract_id = typer.prompt("Contract ID")
+    contract = session.query(Contract).get(contract_id)
+    if not contract:
+        typer.echo(f"Contract {contract_id} not found")
+        raise typer.Exit(code=1)
+    value = typer.prompt("Value", default=contract.value)
+    amount_due = typer.prompt("Amount Due", default=contract.amount_due)
+    sales_rep_id = typer.prompt("Sales Rep ID", default=contract.sales_rep.id)
+    signed = typer.confirm("Signed", default=contract.signed)
+
+    if amount_due > value:
+        typer.echo("Amount due cannot be greater than value.")
+        raise typer.Exit(code=1)
+
+    if amount_due < 0 or value <= 0:
+        typer.echo("Amount due and value cannot be negative.")
+        raise typer.Exit(code=1)
+
+    if amount_due == value and not signed:
+        typer.echo("Contract must be signed if paid in full.")
+        raise typer.Exit(code=1)
+
+    contract.value = value
+    contract.amount_due = amount_due
+    contract.sales_rep_id = sales_rep_id
+    contract.signed = signed
+
+    session.commit()
+    typer.echo(f"Contract {contract.id} updated.")
+
+
+@app.command("delete")
+def delete_contract(contract_id: int):
+    contract = session.query(Contract).get(contract_id)
+
+    if not contract:
+        typer.echo(f"Contract {contract_id} not found")
+        raise typer.Exit(code=1)
+
+    event = contract.event
+    if event:
+        session.delete(event)
+
+    session.delete(contract)
+    session.commit()
+    typer.echo(f"Contract {contract_id} deleted")
