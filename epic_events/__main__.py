@@ -33,7 +33,17 @@ app.add_typer(events_app, name="events")
 
 
 @app.command()
-def login():
+def login() -> None:
+    """
+    Prompts the user for a username and password, checks if the user exists and the password is correct,
+    generates a JWT token, and sends it to the storage.
+
+    Raises:
+        socket.error: If there is a socket connection failure.
+
+    Returns:
+        None
+    """
     username = typer.prompt("Username")
     password = typer.prompt("Password", hide_input=True)
     user = (
@@ -54,8 +64,14 @@ def login():
         typer.echo(f"Socket connection failed: {e}")
 
 
-@app.command()
-def logout():
+@app.command("logout")
+def logout() -> None:
+    """
+    Logs out the user by terminating the storage connection.
+
+    Raises:
+        socket.error: If the socket connection fails.
+    """
     try:
         storage.terminate()
         typer.echo("Logout successful")
@@ -63,8 +79,14 @@ def logout():
         typer.echo(f"Socket connection failed: {e}")
 
 
-@app.command("user")
+@app.command("whoami")
 def get_auth_user():
+    """
+    Retrieves the authenticated user based on the decoded token.
+
+    Returns:
+        User: The authenticated user object.
+    """
     try:
         token = storage.request_token()
         decoded = decode_jwt(token)
@@ -77,6 +99,11 @@ def get_auth_user():
     else:
         print(user.username)
         return user
+
+
+@app.command("error")
+def trigger_error():
+    print(1 / 0)
 
 
 if __name__ == "__main__":

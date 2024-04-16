@@ -18,6 +18,13 @@ app = typer.Typer()
 
 @app.command("list")
 def list_users():
+    """
+    List all users in the system.
+
+    This function retrieves all users from the database and displays them in a table format.
+    The table includes columns for the user's ID, username, email, and user type.
+    """
+
     allow_users([UserType.ADMIN, UserType.MANAGER])
     users = session.query(User).all()
     users_table = Table(title="Users")
@@ -33,6 +40,16 @@ def list_users():
 
 @app.command("create")
 def create_user():
+    """
+    Creates a new user based on user input.
+
+    This function prompts the user to enter the username, password, email, and user type.
+    It then creates a new user object based on the selected user type and adds it to the session.
+
+    Raises:
+        ValueError: If an invalid user type is selected.
+    """
+
     allow_users([UserType.ADMIN, UserType.MANAGER])
     username = typer.prompt("Username")
     password = typer.prompt("Password", hide_input=True)
@@ -63,11 +80,21 @@ def create_user():
 
     session.add(user)
     session.commit()
+    # Logger dans Sentry
     typer.echo(f"{user_type} {user.id} created.")
 
 
 @app.command("update")
 def update_user():
+    """
+    Update user information.
+
+    This function allows the user to update their own profile information or update other user profiles if they are an admin.
+
+    Raises:
+        typer.Exit: If the user is not authenticated or if the user ID is not found.
+
+    """
     allow_users([ALL_AUTH_USER_TYPES])
     request_user = get_current_user()
     if not request_user:
@@ -93,11 +120,22 @@ def update_user():
     user.set_password(password)
     user.email = email
     session.commit()
+    # Logger dans Sentry
     typer.echo(f"User {user_id} updated")
 
 
 @app.command("delete")
 def delete_user(user_id: int):
+    """
+    Deletes a user with the given user_id.
+
+    Args:
+        user_id (int): The ID of the user to be deleted.
+
+    Raises:
+        typer.Exit: If the user with the given user_id is not found.
+
+    """
     allow_users([UserType.ADMIN])
     user = session.query(User).get(user_id)
 

@@ -10,6 +10,14 @@ app = typer.Typer()
 
 @app.command("list")
 def list_events():
+    """
+    Retrieve and display a list of events.
+
+    This function queries the database for all events and displays them in a table format.
+    The table includes columns for the event's ID, name, start date, end date, attendees,
+    location, notes, contract ID, support representative name, time created, and time updated.
+    """
+
     events = session.query(Event).all()
     events_table = Table(title="Events")
     columns = (
@@ -48,6 +56,13 @@ def list_events():
 
 @app.command("create")
 def create_event():
+    """
+    Creates a new event and saves it to the database.
+
+    Prompts the user for event details such as name, start date, end date, attendees, location, notes,
+    contract ID, and support rep ID. Then creates a new Event object with the provided details and
+    saves it to the database.
+    """
     name = typer.prompt("Name")
     start_date = typer.prompt("Start date")
     end_date = typer.prompt("End date")
@@ -74,6 +89,16 @@ def create_event():
 
 @app.command("update")
 def update_event():
+    """
+    Update an existing event in the database.
+
+    Prompts the user for the event ID and retrieves the corresponding event from the database.
+    Then prompts the user for updated information for the event and updates the event object accordingly.
+    Finally, commits the changes to the database.
+
+    Raises:
+        typer.Exit: If the event with the specified ID is not found in the database.
+    """
     event_id = typer.prompt("Event ID")
     event = session.query(Event).get(event_id)
 
@@ -104,6 +129,16 @@ def update_event():
 
 @app.command("delete")
 def delete_event(event_id: int):
+    """
+    Deletes an event with the given event_id.
+
+    Args:
+        event_id (int): The ID of the event to be deleted.
+
+    Raises:
+        typer.Exit: If the event with the given event_id is not found.
+    """
+
     event = session.query(Event).get(event_id)
 
     if event is None:
