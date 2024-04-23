@@ -2,7 +2,7 @@ import typer
 from rich import print
 from rich.table import Table
 
-from epic_events.auth.utils import allow_users
+from epic_events.auth.utils import ALL_AUTHENTICATED_USERS, allow_users
 from epic_events.models import session
 from epic_events.models.companies import get_or_create_company
 from epic_events.models.customers import Customer
@@ -13,6 +13,7 @@ app = typer.Typer()
 
 @app.command("list")
 def list_customers():
+    allow_users(ALL_AUTHENTICATED_USERS)
     customers = session.query(Customer).all()
     table = Table(title="Customers")
     columns = (
@@ -42,7 +43,7 @@ def list_customers():
 
 @app.command("create")
 def create_customer():
-    allow_users([UserType.ADMIN, UserType.MANAGER, UserType.SALES_REP])
+    allow_users([UserType.MANAGER, UserType.SALES_REP])
     name = typer.prompt("Name")
     company_name = typer.prompt("Company name")
     sales_rep_id = typer.prompt("Sales Rep ID")
@@ -65,7 +66,7 @@ def create_customer():
 
 @app.command("update")
 def update_customer():
-    allow_users([UserType.ADMIN, UserType.MANAGER, UserType.SALES_REP])
+    allow_users([UserType.MANAGER, UserType.SALES_REP])
     customer_id = typer.prompt("Customer ID")
     customer = session.query(Customer).get(customer_id)
 
@@ -93,7 +94,7 @@ def update_customer():
 
 @app.command("delete")
 def delete_customer(customer_id: int):
-    allow_users([UserType.ADMIN, UserType.MANAGER])
+    allow_users([UserType.MANAGER])
     customer = session.query(Customer).get(customer_id)
 
     if customer is None:

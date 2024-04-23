@@ -1,8 +1,13 @@
+import sentry_sdk
 import typer
 from rich import print
 from rich.table import Table
 
-from epic_events.auth.utils import ALL_AUTH_USER_TYPES, allow_users, get_current_user
+from epic_events.auth.utils import (
+    ALL_AUTHENTICATED_USERS,
+    allow_users,
+    get_current_user,
+)
 from epic_events.models import session
 from epic_events.models.users import (
     Admin,
@@ -25,7 +30,7 @@ def list_users():
     The table includes columns for the user's ID, username, email, and user type.
     """
 
-    allow_users([UserType.ADMIN, UserType.MANAGER])
+    allow_users([UserType.MANAGER])
     users = session.query(User).all()
     users_table = Table(title="Users")
 
@@ -50,7 +55,7 @@ def create_user():
         ValueError: If an invalid user type is selected.
     """
 
-    allow_users([UserType.ADMIN, UserType.MANAGER])
+    allow_users([UserType.MANAGER])
     username = typer.prompt("Username")
     password = typer.prompt("Password", hide_input=True)
     email = typer.prompt("Email")
@@ -80,8 +85,9 @@ def create_user():
 
     session.add(user)
     session.commit()
-    # Logger dans Sentry
-    typer.echo(f"{user_type} {user.id} created.")
+    message = f"CREATED {user_type.value} {user.id}: {user.username}."
+    sentry_sdk.capture_message(message)
+    typer.echo(message)
 
 
 @app.command("update")
@@ -95,7 +101,7 @@ def update_user():
         typer.Exit: If the user is not authenticated or if the user ID is not found.
 
     """
-    allow_users([ALL_AUTH_USER_TYPES])
+    allow_users([ALL_AUTHENTICATED_USERS])
     request_user = get_current_user()
     if not request_user:
         raise typer.Exit(code=1)
@@ -120,8 +126,9 @@ def update_user():
     user.set_password(password)
     user.email = email
     session.commit()
-    # Logger dans Sentry
-    typer.echo(f"User {user_id} updated")
+    message = f"UPDATED {user.user_type} {user.id}: {user.username}."
+    sentry_sdk.capture_message(message)
+    typer.echo(message)
 
 
 @app.command("delete")
@@ -145,4 +152,6 @@ def delete_user(user_id: int):
 
     session.delete(user)
     session.commit()
-    typer.echo(f"User {user_id} deleted")
+    message = f"DELETED {user.user_type.value} {user.id}: {user.username}."
+    sentry_sdk.capture_message(message)
+    typer.echo(message)

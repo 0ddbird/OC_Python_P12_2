@@ -3,7 +3,7 @@ from rich import print
 from rich.table import Table
 from sqlalchemy.exc import IntegrityError
 
-from epic_events.auth.utils import allow_users
+from epic_events.auth.utils import ALL_AUTHENTICATED_USERS, allow_users
 from epic_events.models import session
 from epic_events.models.companies import Company
 from epic_events.models.users import UserType
@@ -16,6 +16,7 @@ def list_companies():
     """
     Retrieve a list of companies and display them in a table format.
     """
+    allow_users(ALL_AUTHENTICATED_USERS)
     companies = session.query(Company).all()
     companies_table = Table(title="Companies")
     columns = ("Id", "Name", "Customers")

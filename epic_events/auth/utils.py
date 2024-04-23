@@ -10,7 +10,7 @@ from epic_events.models.users import User, UserType
 
 storage = TokenStorage()
 
-ALL_AUTH_USER_TYPES = [user_type for user_type in UserType]
+ALL_AUTHENTICATED_USERS = [user_type for user_type in UserType]
 
 
 def generate_jwt(username: str) -> str:
@@ -80,7 +80,7 @@ def get_current_user() -> User:
     return user
 
 
-def allow_users(authorized_users: list[UserType]) -> None:
+def allow_users(authorized_user_types: list[UserType]) -> None:
     """
     Checks if the current user is authorized to access the system.
 
@@ -97,6 +97,10 @@ def allow_users(authorized_users: list[UserType]) -> None:
     if not user:
         print("User not found")
         raise typer.Exit(code=1)
-    if user.user_type not in [choice.value for choice in authorized_users]:
+
+    if user.user_type == UserType.ADMIN.value:
+        return
+
+    if user.user_type not in [choice.value for choice in authorized_user_types]:
         print("User not authorized")
         raise typer.Exit(code=1)
