@@ -5,6 +5,9 @@ import decimal
 from epic_events.models import session
 from epic_events.models.contracts import Contract
 import sentry_sdk
+from epic_events.auth.utils import allowed_departments
+from epic_events.models.departments import ALL, MANAGER, SALES
+
 
 app = typer.Typer()
 
@@ -14,6 +17,7 @@ def list_contracts():
     """
     List all contracts in the database and display them in a table format.
     """
+    allowed_departments(ALL)
     contracts = session.query(Contract).all()
     table = Table(title="Contracts")
     columns = (
@@ -59,6 +63,7 @@ def create_contract():
     Raises:
         typer.Exit: Raised when the input values are invalid or the contract cannot be created.
     """
+    allowed_departments([MANAGER, SALES])
     customer_id = typer.prompt("Customer ID")
     value = typer.prompt("Value")
     amount_due = typer.prompt("Amount Due")
@@ -114,7 +119,7 @@ def update_contract():
         typer.Exit: If the contract with the specified ID is not found, or if the entered values are invalid or do not meet the required conditions.
 
     """
-
+    allowed_departments([MANAGER, SALES])
     contract_id = typer.prompt("Contract ID")
     contract = session.query(Contract).get(contract_id)
     if not contract:
@@ -167,6 +172,7 @@ def delete_contract(contract_id: int):
     Raises:
         typer.Exit: If the contract with the given contract_id is not found.
     """
+    allowed_departments([MANAGER, SALES])
 
     contract = session.query(Contract).get(contract_id)
 

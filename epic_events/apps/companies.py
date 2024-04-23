@@ -3,10 +3,10 @@ from rich import print
 from rich.table import Table
 from sqlalchemy.exc import IntegrityError
 
-from epic_events.auth.utils import allow_users
+from epic_events.auth.utils import allowed_departments
 from epic_events.models import session
 from epic_events.models.companies import Company
-from epic_events.models.users import UserType
+from epic_events.models.departments import ALL, MANAGER, SALES
 
 app = typer.Typer()
 
@@ -16,6 +16,7 @@ def list_companies():
     """
     Retrieve a list of companies and display them in a table format.
     """
+    allowed_departments(ALL)
     companies = session.query(Company).all()
     companies_table = Table(title="Companies")
     columns = ("Id", "Name", "Customers")
@@ -46,7 +47,7 @@ def create_company():
     Raises:
         IntegrityError: If a company with the same name already exists in the database.
     """
-    allow_users([UserType.ADMIN, UserType.MANAGER, UserType.SALES_REP])
+    allowed_departments([MANAGER, SALES])
     name = typer.prompt("Name")
     company = Company(name=name)
 
@@ -73,7 +74,7 @@ def update_company():
         typer.Exit: If the company is not found.
 
     """
-    allow_users([UserType.ADMIN, UserType.MANAGER])
+    allowed_departments([MANAGER])
     company_id = typer.prompt("Company ID")
     company = session.query(Company).get(company_id)
 
@@ -97,7 +98,7 @@ def delete_company(company_id: int):
     Raises:
         typer.Exit: If the company with the given company_id is not found.
     """
-    allow_users([UserType.ADMIN, UserType.MANAGER])
+    allowed_departments([MANAGER])
     company = session.query(Company).get(company_id)
 
     if company is None:

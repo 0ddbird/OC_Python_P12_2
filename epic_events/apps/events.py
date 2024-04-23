@@ -1,9 +1,10 @@
 import typer
 from rich import print
 from rich.table import Table
-
+from epic_events.auth.utils import allowed_departments
 from epic_events.models import session
 from epic_events.models.events import Event
+from epic_events.models.departments import ALL, MANAGER, SALES
 
 app = typer.Typer()
 
@@ -17,7 +18,7 @@ def list_events():
     The table includes columns for the event's ID, name, start date, end date, attendees,
     location, notes, contract ID, support representative name, time created, and time updated.
     """
-
+    allowed_departments(ALL)
     events = session.query(Event).all()
     events_table = Table(title="Events")
     columns = (
@@ -63,6 +64,7 @@ def create_event():
     contract ID, and support rep ID. Then creates a new Event object with the provided details and
     saves it to the database.
     """
+    allowed_departments([MANAGER, SALES])
     name = typer.prompt("Name")
     start_date = typer.prompt("Start date")
     end_date = typer.prompt("End date")
@@ -99,6 +101,7 @@ def update_event():
     Raises:
         typer.Exit: If the event with the specified ID is not found in the database.
     """
+    allowed_departments([MANAGER, SALES])
     event_id = typer.prompt("Event ID")
     event = session.query(Event).get(event_id)
 
@@ -129,6 +132,7 @@ def update_event():
 
 @app.command("delete")
 def delete_event(event_id: int):
+    allowed_departments([MANAGER, SALES])
     """
     Deletes an event with the given event_id.
 

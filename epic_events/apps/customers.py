@@ -2,17 +2,26 @@ import typer
 from rich import print
 from rich.table import Table
 
-from epic_events.auth.utils import allow_users
+from epic_events.auth.utils import allowed_departments
 from epic_events.models import session
 from epic_events.models.companies import get_or_create_company
 from epic_events.models.customers import Customer
-from epic_events.models.users import User, UserType
+from epic_events.models.users import User
+from epic_events.models.departments import ALL, MANAGER, SALES
 
 app = typer.Typer()
 
 
 @app.command("list")
 def list_customers():
+    """
+    Retrieve and display a list of customers.
+
+    This function queries the database to retrieve all customers and displays them in a table format.
+    The table includes columns for customer ID, name, company, sales representative, time created, and time updated.
+    """
+    allowed_departments(ALL)
+
     customers = session.query(Customer).all()
     table = Table(title="Customers")
     columns = (
@@ -42,7 +51,16 @@ def list_customers():
 
 @app.command("create")
 def create_customer():
-    allow_users([UserType.ADMIN, UserType.MANAGER, UserType.SALES_REP])
+    """
+    Creates a new customer.
+
+    This function prompts the user for the customer's name, company name, and sales rep ID.
+    It then creates a new customer object and adds it to the session.
+
+    Raises:
+        typer.Exit: If the sales rep with the specified ID is not found.
+    """
+    allowed_departments([MANAGER, SALES])
     name = typer.prompt("Name")
     company_name = typer.prompt("Company name")
     sales_rep_id = typer.prompt("Sales Rep ID")
@@ -65,7 +83,22 @@ def create_customer():
 
 @app.command("update")
 def update_customer():
-    allow_users([UserType.ADMIN, UserType.MANAGER, UserType.SALES_REP])
+    """
+    Update a customer's information.
+
+    This function allows users with ADMIN, MANAGER, or SALES_REP roles to update a customer's information.
+    It prompts the user for the customer ID and retrieves the corresponding customer from the database.
+    If the customer is not found, it raises an error and exits.
+    It then prompts the user for the updated name, company name, and sales rep ID.
+    It retrieves the company and sales rep from the database based on the provided information.
+    If the sales rep is not found, it raises an error and exits.
+    Finally, it updates the customer's name, company, and sales rep in the database and commits the changes.
+
+    Raises:
+        typer.Exit: If the customer or sales rep is not found.
+
+    """
+    allowed_departments([MANAGER, SALES])
     customer_id = typer.prompt("Customer ID")
     customer = session.query(Customer).get(customer_id)
 
@@ -93,7 +126,14 @@ def update_customer():
 
 @app.command("delete")
 def delete_customer(customer_id: int):
-    allow_users([UserType.ADMIN, UserType.MANAGER])
+    """
+    Deletes a customer with the given customer_id.
+
+    Args:
+        customer_id (int): The ID of the customer to be deleted.
+    """
+
+    allowed_departments([MANAGER, SALES])
     customer = session.query(Customer).get(customer_id)
 
     if customer is None:

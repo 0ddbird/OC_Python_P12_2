@@ -6,11 +6,9 @@ from rich import print
 
 from epic_events.auth.storage import TokenStorage
 from epic_events.models import session
-from epic_events.models.users import User, UserType
+from epic_events.models.users import User
 
 storage = TokenStorage()
-
-ALL_AUTH_USER_TYPES = [user_type for user_type in UserType]
 
 
 def generate_jwt(username: str) -> str:
@@ -80,12 +78,12 @@ def get_current_user() -> User:
     return user
 
 
-def allow_users(authorized_users: list[UserType]) -> None:
+def allowed_departments(allowed_deparments: list[str]) -> None:
     """
     Checks if the current user is authorized to access the system.
 
     Args:
-        authorized_users (list[UserType]): A list of authorized user types.
+        allowed_deparments (list[str]): A list of authorized user types.
 
     Raises:
         typer.Exit: If the current user is not found or not authorized.
@@ -97,6 +95,17 @@ def allow_users(authorized_users: list[UserType]) -> None:
     if not user:
         print("User not found")
         raise typer.Exit(code=1)
-    if user.user_type not in [choice.value for choice in authorized_users]:
+
+    if "ADMIN" in user.departments:
+        return True
+
+    is_authorized = False
+
+    for department in user.departments:
+        if department in allowed_deparments:
+            is_authorized = True
+            break
+
+    if not is_authorized:
         print("User not authorized")
         raise typer.Exit(code=1)

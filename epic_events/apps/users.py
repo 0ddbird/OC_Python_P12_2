@@ -2,16 +2,15 @@ import typer
 from rich import print
 from rich.table import Table
 
-from epic_events.auth.utils import ALL_AUTH_USER_TYPES, allow_users, get_current_user
-from epic_events.models import session
-from epic_events.models.users import (
-    Admin,
-    Manager,
-    SalesRep,
-    SupportRep,
-    User,
-    UserType,
+from epic_events.auth.utils import (
+    allowed_departments,
+    get_current_user,
 )
+import sentry_sdk
+from epic_events.models import session
+from epic_events.models.users import User
+from epic_events.models.departments import Department
+from epic_events.models.departments import ALL, MANAGER
 
 app = typer.Typer()
 
@@ -25,15 +24,17 @@ def list_users():
     The table includes columns for the user's ID, username, email, and user type.
     """
 
-    allow_users([UserType.ADMIN, UserType.MANAGER])
+    allowed_departments(ALL)
     users = session.query(User).all()
     users_table = Table(title="Users")
 
-    for column in ("Id", "Username", "Email", "User type"):
+    for column in ("Id", "Username", "Email", "Department"):
         users_table.add_column(column)
 
     for user in users:
-        users_table.add_row(str(user.id), user.username, user.email, user.user_type)
+        users_table.add_row(
+            str(user.id), user.username, user.email, user.department.name
+        )
 
     print(users_table)
 
@@ -50,38 +51,28 @@ def create_user():
         ValueError: If an invalid user type is selected.
     """
 
-    allow_users([UserType.ADMIN, UserType.MANAGER])
+    allowed_departments([MANAGER])
     username = typer.prompt("Username")
     password = typer.prompt("Password", hide_input=True)
     email = typer.prompt("Email")
-    print("User types options:")
-    type_values = "\n".join([user_type.value for user_type in UserType])
-    print(type_values)
-    user_type = typer.prompt("Choose user type", type=UserType)
 
     user_data = {
         "username": username,
         "password": password,
         "email": email,
-        "user_type": user_type.value,
     }
-
-    match user_type:
-        case UserType.ADMIN:
-            user = Admin(**user_data)
-        case UserType.MANAGER:
-            user = Manager(**user_data)
-        case UserType.SALES_REP:
-            user = SalesRep(**user_data)
-        case UserType.SUPPORT_REP:
-            user = SupportRep(**user_data)
-        case _:
-            raise ValueError("Invalid user type")
-
+    user = User(**user_data)
     session.add(user)
     session.commit()
-    # Logger dans Sentry
-    typer.echo(f"{user_type} {user.id} created.")
+
+    print("Departments:")
+    departments = session.query(Department).all()
+    departments = "\n".join([department.name for department in departments])
+    print(departments)
+    department = typer.prompt("Link user to department")
+
+    sentry_sdk.capture_message(f"The User {user.id} has been created.")
+    typer.echo(f"{user.id} created.")
 
 
 @app.command("update")
@@ -95,7 +86,7 @@ def update_user():
         typer.Exit: If the user is not authenticated or if the user ID is not found.
 
     """
-    allow_users([ALL_AUTH_USER_TYPES])
+    allowed_departments(ALL)
     request_user = get_current_user()
     if not request_user:
         raise typer.Exit(code=1)
@@ -109,7 +100,7 @@ def update_user():
 
     is_different_user = user.id != request_user.id
 
-    if is_different_user and request_user.user_type != UserType.ADMIN.value:
+    if is_different_user and not request_user.is_superuser:
         typer.echo("You can only update your own profile.")
         raise typer.Exit(code=1)
 
@@ -136,7 +127,7 @@ def delete_user(user_id: int):
         typer.Exit: If the user with the given user_id is not found.
 
     """
-    allow_users([UserType.ADMIN])
+    allowed_departments([UserType.ADMIN])
     user = session.query(User).get(user_id)
 
     if user is None:
