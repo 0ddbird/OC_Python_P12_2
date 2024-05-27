@@ -6,6 +6,7 @@ from epic_events.auth.utils import ALL_AUTHENTICATED_USERS, allow_users
 from epic_events.models import session
 from epic_events.models.events import Event
 from epic_events.models.users import UserType
+from datetime import datetime
 
 app = typer.Typer()
 
@@ -47,8 +48,8 @@ def list_events():
             str(event.attendees),
             event.location,
             event.notes,
-            event.contract.id if event.contract else "",
-            event.support_rep.name if event.support_rep else "",
+            str(event.contract.id) if event.contract else "",
+            event.support_rep.username if event.support_rep else "",
             str(event.time_created),
             str(event.time_updated),
         )
@@ -69,8 +70,8 @@ def create_event():
     allow_users([UserType.SALES_REP, UserType.MANAGER])
 
     name = typer.prompt("Name")
-    start_date = typer.prompt("Start date")
-    end_date = typer.prompt("End date")
+    start_date = datetime.strptime(typer.prompt("Start date (YYYY-MM-DD)"), "%Y-%m-%d")
+    end_date = datetime.strptime(typer.prompt("End date (YYYY-MM-DD)"), "%Y-%m-%d")
     attendees = typer.prompt("Attendees")
     location = typer.prompt("Location")
     notes = typer.prompt("Notes")
@@ -115,8 +116,12 @@ def update_event():
         raise typer.Exit(code=1)
 
     name = typer.prompt("Name", default=event.name)
-    start_date = typer.prompt("Start date", default=event.start_date)
-    end_date = typer.prompt("End date", default=event.end_date)
+    start_date = datetime.strptime(
+        typer.prompt("Start date (YYYY-MM-DD)", default=event.start_date), "%Y-%m-%d"
+    )
+    end_date = datetime.strptime(
+        typer.prompt("End date (YYYY-MM-DD)", default=event.end_date), "%Y-%m-%d"
+    )
     attendees = typer.prompt("Attendees", default=event.attendees)
     location = typer.prompt("Location", default=event.location)
     notes = typer.prompt("Notes", default=event.notes)
